@@ -1,13 +1,19 @@
 <template>
   <div class="app-container">
     <header class="header">
-      <div>
+      <div class="header-titles">
         <h1>Dynamic Schedule</h1>
         <p class="subtitle">Organize your routine efficiently and with style</p>
       </div>
       <div class="header-actions">
-        <button class="btn-secondary" @click="openTagsModal">Manage Tags</button>
-        <button class="btn-primary" @click="addRow">+ Add Row</button>
+        <button class="btn-secondary" @click="openTagsModal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+          Manage Tags
+        </button>
+        <button class="btn-primary" @click="addRow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add Row
+        </button>
       </div>
     </header>
 
@@ -37,29 +43,30 @@
                     {{ getTask(r - 1, d - 1).startTime }}<template v-if="getTask(r - 1, d - 1).endTime"> - {{ getTask(r - 1, d - 1).endTime }}</template>
                   </span>
                 </div>
-                <input 
-                  type="checkbox" 
-                  class="task-checkbox" 
-                  :checked="getTask(r - 1, d - 1).isCompleted"
-                  @click.stop="toggleCompletion(getTask(r - 1, d - 1))"
-                />
+                <div class="task-actions">
+                  <input 
+                    type="checkbox" 
+                    class="task-checkbox" 
+                    :checked="getTask(r - 1, d - 1).isCompleted"
+                    @click.stop="toggleCompletion(getTask(r - 1, d - 1))"
+                  />
+                  <button class="btn-icon btn-delete-task" @click.stop="deleteTask(getTask(r - 1, d - 1).id)" title="Delete Task">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </button>
+                </div>
               </div>
               
               <p class="task-desc">{{ getTask(r - 1, d - 1).description }}</p>
               
               <div class="task-tags" v-if="getTask(r - 1, d - 1).tags && getTask(r - 1, d - 1).tags.length > 0">
-                <span v-for="tag in getTask(r - 1, d - 1).tags" :key="tag.id" class="tag-pill" :style="{ backgroundColor: tag.color + '20', color: tag.color, borderColor: tag.color + '40' }">
+                <span v-for="tag in getTask(r - 1, d - 1).tags" :key="tag.id" class="tag-pill" :style="{ backgroundColor: tag.color, color: getContrastYIQ(tag.color) }">
                   {{ tag.name }}
                 </span>
               </div>
-
-              <button class="btn-delete-task" @click.stop="deleteTask(getTask(r - 1, d - 1).id)" title="Delete Task">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
             </div>
             
-            <!-- Empty Cell Placeholder -->
-            <div v-else class="empty-cell">
+            <!-- Empty Cell Hover Effect -->
+            <div v-else class="empty-cell-overlay">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </div>
           </div>
@@ -96,7 +103,7 @@
               v-for="tag in allTags" 
               :key="tag.id" 
               :class="['tag-selectable', { 'selected': isTagSelected(tag) }]"
-              :style="{ borderLeftColor: tag.color }"
+              :style="{ backgroundColor: isTagSelected(tag) ? tag.color : 'transparent', color: isTagSelected(tag) ? getContrastYIQ(tag.color) : 'inherit', borderColor: tag.color }"
               @click="toggleTagSelection(tag)"
             >
               {{ tag.name }}
@@ -126,11 +133,12 @@
 
         <div class="tags-list">
           <div v-for="tag in allTags" :key="tag.id" class="tag-list-item">
-            <div class="tag-preview" :style="{ backgroundColor: tag.color + '20', color: tag.color, borderColor: tag.color + '40' }">
-              <span class="color-dot" :style="{ backgroundColor: tag.color }"></span>
+            <div class="tag-preview" :style="{ backgroundColor: tag.color, color: getContrastYIQ(tag.color) }">
               {{ tag.name }}
             </div>
-            <button class="btn-delete-tag" @click="deleteTag(tag.id)">Delete</button>
+            <button class="btn-icon btn-delete-tag" @click="deleteTag(tag.id)" title="Delete Tag">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
           </div>
         </div>
 
@@ -170,7 +178,7 @@ export default {
       },
 
       newTagName: '',
-      newTagColor: '#3b82f6'
+      newTagColor: '#0052cc'
     }
   },
   methods: {
@@ -204,7 +212,7 @@ export default {
     openTaskModal(rowIndex, dayOfWeek) {
       const existing = this.getTask(rowIndex, dayOfWeek);
       if (existing) {
-        this.editingTask = JSON.parse(JSON.stringify(existing)); // Deep copy to avoid reactive mess before save
+        this.editingTask = JSON.parse(JSON.stringify(existing));
         if (!this.editingTask.tags) this.editingTask.tags = [];
       } else {
         this.editingTask = {
@@ -292,6 +300,18 @@ export default {
       } else {
         this.editingTask.tags.push(tag);
       }
+    },
+    // Utility to get white/black text depending on background color brightness
+    getContrastYIQ(hexcolor){
+        hexcolor = hexcolor.replace("#", "");
+        if (hexcolor.length === 3) {
+            hexcolor = hexcolor.split('').map(c => c+c).join('');
+        }
+        var r = parseInt(hexcolor.substr(0,2),16);
+        var g = parseInt(hexcolor.substr(2,2),16);
+        var b = parseInt(hexcolor.substr(4,2),16);
+        var yiq = ((r*299)+(g*587)+(b*114))/1000;
+        return (yiq >= 128) ? '#172b4d' : '#ffffff';
     }
   },
   mounted() {
@@ -301,31 +321,38 @@ export default {
 </script>
 
 <style>
-/* CSS Resets & Variables */
+/* CSS Resets & Variables - Trello Inspired Soft Cool Palette */
 :root {
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --secondary: #f1f5f9;
-  --secondary-hover: #e2e8f0;
+  /* Slytherin Palette (Green & Silver) */
+  --primary: #1a472a;        /* Deep Slytherin Green */
+  --primary-hover: #2a623d;  /* Lighter Emerald */
+  --secondary: #dcdcdc;      /* Silver / Light Grey */
+  --secondary-hover: #c0c0c0;
   
-  --bg-color: #f8fafc;
-  --surface: #ffffff;
+  /* Rich deep emerald background */
+  --bg-gradient: linear-gradient(135deg, #0b1c11 0%, #1a472a 100%);
   
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
-  --danger: #ef4444;
+  --surface-table: #f2f5f4;  /* Very light silver for table */
+  --surface-header: #ffffff; /* Pure white header */
+  --surface-card: #ffffff;
+  
+  --text-main: #0d1a12;      /* Almost black green for text */
+  --text-muted: #5e6c64;     /* Greyish green */
+  --border: #c4cdc8;         /* Silver border */
+  --danger: #d32f2f;
+  --danger-hover: #b71c1c;
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--bg-color);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Noto Sans', 'Ubuntu', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background: var(--bg-gradient);
+  background-attachment: fixed;
   color: var(--text-main);
 }
 
 .app-container {
-  max-width: 1500px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 2rem;
   display: flex;
@@ -338,16 +365,21 @@ body {
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 2rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.header h1 {
-  font-size: 2rem;
+.header-titles h1 {
+  font-size: 1.8rem;
   font-weight: 800;
   margin: 0 0 0.2rem 0;
   color: var(--text-main);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .subtitle {
@@ -358,32 +390,34 @@ body {
 
 .header-actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 button {
   font-family: inherit;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .btn-primary {
   background-color: var(--primary);
   color: white;
   border: none;
-  padding: 0.7rem 1.4rem;
-  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 3px; 
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 .btn-primary:hover:not(:disabled) { 
   background-color: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.3);
 }
 .btn-primary:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -391,32 +425,44 @@ button {
 .btn-secondary {
   background-color: var(--secondary);
   color: var(--text-main);
-  border: 1px solid var(--border);
-  padding: 0.7rem 1.4rem;
-  border-radius: 8px;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 3px;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
 }
 .btn-secondary:hover { background-color: var(--secondary-hover); }
 
-/* Grid */
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 3px;
+  color: var(--text-muted);
+}
+.btn-icon:hover {
+  background: var(--secondary);
+  color: var(--text-main);
+}
+
+/* TABLE SYSTEM - Hard lines restored, styled elegantly */
 .grid-container {
-  background: var(--surface);
-  border-radius: 16px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  overflow: auto;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  overflow: auto;
+  background-color: var(--surface-table);
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255,255,255,0.2);
 }
 
 .grid-header {
   display: grid;
-  grid-template-columns: repeat(7, minmax(180px, 1fr));
-  background-color: rgba(248, 250, 252, 0.95);
-  backdrop-filter: blur(8px);
+  grid-template-columns: repeat(7, minmax(220px, 1fr));
+  background-color: var(--surface-header);
   border-bottom: 2px solid var(--border);
   position: sticky;
   top: 0;
@@ -424,123 +470,141 @@ button {
 }
 
 .header-cell {
-  padding: 1.2rem 1rem;
+  padding: 1rem;
   text-align: center;
   font-weight: 700;
   color: var(--text-main);
+  font-size: 0.85rem;
   text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
   border-right: 1px solid var(--border);
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
-.header-cell:last-child { border-right: none; }
+.header-cell:last-child {
+  border-right: none;
+}
 
 .grid-body {
   display: flex;
   flex-direction: column;
-  background-color: #fafbfc;
+  background-color: var(--surface-table);
 }
 
 .grid-row {
   display: grid;
-  grid-template-columns: repeat(7, minmax(180px, 1fr));
+  grid-template-columns: repeat(7, minmax(220px, 1fr));
   border-bottom: 1px solid var(--border);
   min-height: 140px;
+}
+.grid-row:last-child {
+  border-bottom: none;
 }
 
 .grid-cell {
   border-right: 1px solid var(--border);
-  padding: 0.6rem;
   position: relative;
-  cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* CRITICAL for grid children to prevent overflow */
-  overflow: hidden; /* Ensures content doesn't break boundaries */
+  padding: 8px; /* Internal padding so cards don't touch the borders */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
-.grid-cell:last-child { border-right: none; }
-.grid-cell:hover { background-color: rgba(241, 245, 249, 0.5); }
-.grid-cell:hover .empty-cell { opacity: 1; transform: scale(1); }
+.grid-cell:last-child {
+  border-right: none;
+}
+.grid-cell:hover {
+  background-color: rgba(9, 30, 66, 0.03);
+}
 
-.empty-cell {
+/* Empty Cell Placeholder */
+.empty-cell-overlay {
   margin: auto;
-  color: #cbd5e1;
+  color: var(--text-muted);
   opacity: 0;
   transform: scale(0.8);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
+}
+.grid-cell:hover .empty-cell-overlay {
+  opacity: 0.5;
+  transform: scale(1);
 }
 
-/* Task Card */
+/* Task Card - Trello Style inside the table cell */
 .task-card {
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  padding: 0.8rem;
-  border-radius: 10px;
-  height: 100%;
-  box-sizing: border-box;
-  position: relative;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  background-color: var(--surface-card);
+  border-radius: 6px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 2px rgba(9, 30, 66, 0.25);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  width: 100%;
-  max-width: 100%; /* Prevent overflow */
+  gap: 8px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  height: 100%;
 }
 .task-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 12px -2px rgba(0,0,0,0.08);
-  border-color: #cbd5e1;
+  box-shadow: 0 4px 8px rgba(9, 30, 66, 0.2);
 }
 
 .task-completed {
-  opacity: 0.6;
-  background-color: #f8fafc;
+  opacity: 0.65;
+  background-color: #fafbfc;
 }
 .task-completed .task-desc {
   text-decoration: line-through;
-  color: var(--text-muted);
 }
 
 .task-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
 }
 
 .task-time {
   font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--primary);
+  font-weight: 600;
+  color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-wrap: nowrap;
-  min-width: 0;
-  white-space: nowrap;
+  gap: 6px;
+  background: var(--secondary);
+  padding: 2px 6px;
+  border-radius: 3px;
 }
 .time-text {
   white-space: nowrap;
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .task-checkbox {
   cursor: pointer;
   width: 16px;
   height: 16px;
-  min-width: 16px;
   accent-color: var(--primary);
-  margin-top: 2px;
+  margin: 0;
+}
+
+.btn-delete-task {
+  opacity: 0;
+  color: var(--text-muted);
+  padding: 2px;
+}
+.task-card:hover .btn-delete-task { 
+  opacity: 1; 
+}
+.btn-delete-task:hover {
+  color: var(--danger);
+  background: rgba(235, 90, 70, 0.1);
 }
 
 .task-desc {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   margin: 0;
   color: var(--text-main);
-  line-height: 1.5;
+  line-height: 1.4;
   word-break: normal;
   overflow-wrap: break-word;
   flex-grow: 1;
@@ -549,63 +613,31 @@ button {
 .task-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: auto;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .tag-pill {
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 12px;
-  border: 1px solid transparent;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
   white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
   max-width: 100%;
-}
-
-.btn-delete-task {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--danger);
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0;
-  transform: scale(0.8);
-  transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  z-index: 5;
-}
-.task-card:hover .btn-delete-task { 
-  opacity: 1; 
-  transform: scale(1);
-}
-.btn-delete-task:hover {
-  background: var(--danger);
-  color: white;
-  border-color: var(--danger);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Modals */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(9, 30, 66, 0.54); 
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 50;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.15s ease-out;
 }
 
 @keyframes fadeIn {
@@ -614,28 +646,28 @@ button {
 }
 
 .modal-content {
-  background: var(--surface);
-  padding: 2.5rem;
-  border-radius: 16px;
+  background: var(--surface-card);
+  padding: 2rem;
+  border-radius: 3px;
   width: 100%;
-  max-width: 450px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 480px;
+  box-shadow: 0 8px 16px -4px rgba(9, 30, 66, 0.25);
+  animation: slideUp 0.2s ease-out;
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.modal-content h2 { margin: 0 0 0.5rem 0; font-size: 1.5rem; color: var(--text-main); }
-.modal-subtitle { color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem; }
+.modal-content h2 { margin: 0 0 0.2rem 0; font-size: 1.25rem; color: var(--text-main); font-weight: 600; }
+.modal-subtitle { color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem; }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .form-row {
@@ -648,51 +680,47 @@ button {
 }
 
 .form-group label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--text-muted);
+  text-transform: uppercase;
 }
 
 .form-group input[type="time"], .form-group textarea, .input-tag-name {
-  padding: 0.8rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid var(--secondary);
+  border-radius: 3px;
   font-family: inherit;
   font-size: 0.95rem;
   transition: all 0.2s;
-  background-color: var(--secondary);
+  background-color: #fafbfc;
+  color: var(--text-main);
 }
 .form-group input:focus, .form-group textarea:focus, .input-tag-name:focus {
   outline: none;
   border-color: var(--primary);
-  background-color: var(--surface);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  background-color: #fff;
 }
 
 .tags-selector {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 0.5rem 0;
+  padding: 0.2rem 0;
 }
 
 .tag-selectable {
   padding: 0.4rem 0.8rem;
-  border: 1px solid var(--border);
-  border-left-width: 4px;
-  border-radius: 6px;
+  border: 2px solid transparent;
+  border-radius: 4px;
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  background: var(--surface);
+  transition: all 0.1s;
 }
-.tag-selectable:hover { background: var(--secondary); }
+.tag-selectable:hover { filter: brightness(0.95); }
 .tag-selectable.selected {
-  background: #eff6ff;
-  border-color: var(--primary);
-  border-left-color: var(--primary) !important;
-  color: var(--primary-hover);
+  box-shadow: 0 0 0 2px var(--surface-card), 0 0 0 4px var(--primary);
 }
 
 .no-tags-msg {
@@ -704,19 +732,18 @@ button {
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2.5rem;
+  gap: 0.75rem;
+  margin-top: 2rem;
 }
 
 .btn-cancel {
   background: transparent;
   color: var(--text-main);
-  border: 1px solid var(--border);
-  padding: 0.7rem 1.4rem;
-  border-radius: 8px;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 3px;
   cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s;
+  font-weight: 500;
 }
 .btn-cancel:hover { background: var(--secondary); }
 
@@ -724,26 +751,26 @@ button {
 .tag-creation-area {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 .input-tag-name { flex-grow: 1; }
 .input-tag-color {
-  width: 46px;
-  height: 46px;
+  width: 42px;
+  height: 42px;
   padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 2px solid var(--secondary);
+  border-radius: 3px;
   cursor: pointer;
-  background: var(--surface);
+  background: #fff;
 }
-.input-tag-color::-webkit-color-swatch-wrapper { padding: 4px; }
-.input-tag-color::-webkit-color-swatch { border: none; border-radius: 4px; }
+.input-tag-color::-webkit-color-swatch-wrapper { padding: 2px; }
+.input-tag-color::-webkit-color-swatch { border: none; border-radius: 2px; }
 
 .tags-list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 200px;
+  max-height: 250px;
   overflow-y: auto;
 }
 
@@ -751,35 +778,24 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  border-radius: 4px;
+  background: var(--surface-card);
+  box-shadow: 0 1px 1px rgba(9,30,66,0.1);
+  border: 1px solid var(--secondary);
 }
 
 .tag-preview {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   font-size: 0.85rem;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 12px;
-  border: 1px solid;
-}
-.color-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 .btn-delete-tag {
-  background: transparent;
-  border: none;
   color: var(--danger);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
 }
-.btn-delete-tag:hover { text-decoration: underline; }
+.btn-delete-tag:hover {
+  background: rgba(235, 90, 70, 0.1);
+}
 </style>

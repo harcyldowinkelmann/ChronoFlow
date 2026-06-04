@@ -1,11 +1,14 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" :data-theme="currentTheme">
     <header class="header">
       <div class="header-titles">
         <h1>Dynamic Schedule</h1>
         <p class="subtitle">Organize your routine efficiently and with style</p>
       </div>
       <div class="header-actions">
+        <select v-model="currentTheme" @change="changeTheme" class="theme-select">
+          <option v-for="t in themes" :key="t.value" :value="t.value">{{ t.label }}</option>
+        </select>
         <button class="btn-secondary" @click="openTagsModal">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
           Manage Tags
@@ -152,7 +155,7 @@
 </template>
 
 <script>
-import { GetTasks, SaveTask, DeleteTask, GetTags, SaveTag, DeleteTag } from '../wailsjs/go/main/App'
+import { GetTasks, SaveTask, DeleteTask, GetTags, SaveTag, DeleteTag, GetTheme, SaveTheme } from '../wailsjs/go/main/App'
 
 export default {
   data() {
@@ -178,12 +181,23 @@ export default {
       },
 
       newTagName: '',
-      newTagColor: '#0052cc'
+      newTagColor: '#0052cc',
+      
+      currentTheme: 'ambitious',
+      themes: [
+        { value: 'ambitious', label: 'Ambitious' },
+        { value: 'sharp-mind', label: 'Sharp Mind' },
+        { value: 'courage', label: 'Courage' },
+        { value: 'hard-work', label: 'Hard Work' }
+      ]
     }
   },
   methods: {
     async loadData() {
       try {
+        const theme = await GetTheme();
+        this.currentTheme = theme || 'ambitious';
+        
         const tasks = await GetTasks();
         this.tasks = tasks || [];
         
@@ -312,6 +326,13 @@ export default {
         var b = parseInt(hexcolor.substr(4,2),16);
         var yiq = ((r*299)+(g*587)+(b*114))/1000;
         return (yiq >= 128) ? '#172b4d' : '#ffffff';
+    },
+    async changeTheme() {
+      try {
+        await SaveTheme(this.currentTheme);
+      } catch (err) {
+        console.error("Error saving theme:", err);
+      }
     }
   },
   mounted() {
@@ -321,24 +342,67 @@ export default {
 </script>
 
 <style>
-/* CSS Resets & Variables - Trello Inspired Soft Cool Palette */
-:root {
-  /* Slytherin Palette (Green & Silver) */
-  --primary: #1a472a;        /* Deep Slytherin Green */
-  --primary-hover: #2a623d;  /* Lighter Emerald */
-  --secondary: #dcdcdc;      /* Silver / Light Grey */
+/* Themes & Palettes */
+[data-theme="ambitious"] {
+  --primary: #1a472a;        
+  --primary-hover: #2a623d;  
+  --secondary: #dcdcdc;      
   --secondary-hover: #c0c0c0;
-  
-  /* Rich deep emerald background */
   --bg-gradient: linear-gradient(135deg, #0b1c11 0%, #1a472a 100%);
-  
-  --surface-table: #f2f5f4;  /* Very light silver for table */
-  --surface-header: #ffffff; /* Pure white header */
+  --surface-table: #f2f5f4;  
+  --surface-header: #ffffff; 
   --surface-card: #ffffff;
-  
-  --text-main: #0d1a12;      /* Almost black green for text */
-  --text-muted: #5e6c64;     /* Greyish green */
-  --border: #c4cdc8;         /* Silver border */
+  --text-main: #0d1a12;      
+  --text-muted: #5e6c64;     
+  --border: #c4cdc8;         
+  --danger: #d32f2f;
+  --danger-hover: #b71c1c;
+}
+
+[data-theme="sharp-mind"] {
+  --primary: #0e1a40;
+  --primary-hover: #222f5b;
+  --secondary: #946b2d;
+  --secondary-hover: #7a5825;
+  --bg-gradient: linear-gradient(135deg, #050a1f 0%, #0e1a40 100%);
+  --surface-table: #f2f4f7;
+  --surface-header: #ffffff;
+  --surface-card: #ffffff;
+  --text-main: #070d20;
+  --text-muted: #5e6c84;
+  --border: #b0bac7;
+  --danger: #d32f2f;
+  --danger-hover: #b71c1c;
+}
+
+[data-theme="courage"] {
+  --primary: #740001;
+  --primary-hover: #ae0001;
+  --secondary: #d3a625;
+  --secondary-hover: #eeba30;
+  --bg-gradient: linear-gradient(135deg, #3a0000 0%, #740001 100%);
+  --surface-table: #faf4f4;
+  --surface-header: #ffffff;
+  --surface-card: #ffffff;
+  --text-main: #3a0000;
+  --text-muted: #740001;
+  --border: #e6c8a8;
+  --danger: #d32f2f;
+  --danger-hover: #b71c1c;
+}
+
+[data-theme="hard-work"] {
+  --primary: #eeb939;
+  --primary-hover: #f0c75e;
+  --secondary: #111111;
+  --secondary-hover: #222222;
+  --bg-gradient: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  --surface-table: #fffef5;
+  --surface-header: #ffffff;
+  --surface-card: #ffffff;
+  --text-main: #111111;
+  --text-muted: #555555;
+  --border: #eeb939;
   --danger: #d32f2f;
   --danger-hover: #b71c1c;
 }
@@ -346,15 +410,15 @@ export default {
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Noto Sans', 'Ubuntu', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  background: var(--bg-gradient);
-  background-attachment: fixed;
-  color: var(--text-main);
 }
 
 .app-container {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 2rem;
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-main);
+  width: 100%;
+  min-height: 100vh;
+  padding: 3rem 5rem;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -445,6 +509,17 @@ button {
 .btn-icon:hover {
   background: var(--secondary);
   color: var(--text-main);
+}
+
+.theme-select {
+  padding: 0.6rem 1.2rem;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--surface-header);
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
 }
 
 /* TABLE SYSTEM - Hard lines restored, styled elegantly */

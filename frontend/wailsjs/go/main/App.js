@@ -18,10 +18,18 @@ export function GetTasks() {
   return window['go']['main']['App']['GetTasks']();
 }
 
+export function GetTheme() {
+  return window['go']['main']['App']['GetTheme']();
+}
+
 export function SaveTag(arg1, arg2) {
   return window['go']['main']['App']['SaveTag'](arg1, arg2);
 }
 
 export function SaveTask(arg1) {
   return window['go']['main']['App']['SaveTask'](arg1);
+}
+
+export function SaveTheme(arg1) {
+  return window['go']['main']['App']['SaveTheme'](arg1);
 }

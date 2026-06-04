@@ -92,6 +92,10 @@ func (a *App) startup(ctx context.Context) {
 			FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE,
 			FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE
 		);`,
+		`CREATE TABLE IF NOT EXISTS settings (
+			key TEXT PRIMARY KEY,
+			value TEXT
+		);`,
 	}
 
 	for _, q := range queries {
@@ -225,5 +229,26 @@ func (a *App) SaveTag(name string, color string) (Tag, error) {
 // DeleteTag removes a tag
 func (a *App) DeleteTag(id int) error {
 	_, err := a.db.Exec("DELETE FROM tags WHERE id = ?", id)
+	return err
+}
+
+// GetTheme returns the saved theme or a default
+func (a *App) GetTheme() (string, error) {
+	var theme string
+	err := a.db.QueryRow("SELECT value FROM settings WHERE key = 'theme'").Scan(&theme)
+	if err == sql.ErrNoRows {
+		return "ambitious", nil // Default to Slytherin (Ambitious)
+	}
+	if err != nil {
+		return "", fmt.Errorf("failed to query theme: %v", err)
+	}
+	return theme, nil
+}
+
+// SaveTheme saves the user's selected theme
+func (a *App) SaveTheme(theme string) error {
+	_, err := a.db.Exec(`
+		INSERT INTO settings (key, value) VALUES ('theme', ?)
+		ON CONFLICT(key) DO UPDATE SET value = excluded.value`, theme)
 	return err
 }

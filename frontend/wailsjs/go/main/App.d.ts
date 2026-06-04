@@ -10,6 +10,10 @@ export function GetTags():Promise<Array<main.Tag>>;
 
 export function GetTasks():Promise<Array<main.Task>>;
 
+export function GetTheme():Promise<string>;
+
 export function SaveTag(arg1:string,arg2:string):Promise<main.Tag>;
 
 export function SaveTask(arg1:main.Task):Promise<main.Task>;
+
+export function SaveTheme(arg1:string):Promise<void>;

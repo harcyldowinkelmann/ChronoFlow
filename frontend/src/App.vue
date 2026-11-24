@@ -428,6 +428,7 @@ body {
 /* Header */
 .header {
   display: flex;
+  flex-shrink: 0;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
@@ -524,7 +525,10 @@ button {
 
 /* TABLE SYSTEM - Hard lines restored, styled elegantly */
 .grid-container {
+  --day-min-width: 220px;
   flex-grow: 1;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: auto;
@@ -534,9 +538,15 @@ button {
   border: 1px solid rgba(255,255,255,0.2);
 }
 
+.grid-header,
+.grid-body {
+  min-width: calc(7 * var(--day-min-width));
+  flex-shrink: 0;
+}
+
 .grid-header {
   display: grid;
-  grid-template-columns: repeat(7, minmax(220px, 1fr));
+  grid-template-columns: repeat(7, minmax(var(--day-min-width), 1fr));
   background-color: var(--surface-header);
   border-bottom: 2px solid var(--border);
   position: sticky;
@@ -565,7 +575,7 @@ button {
 
 .grid-row {
   display: grid;
-  grid-template-columns: repeat(7, minmax(220px, 1fr));
+  grid-template-columns: repeat(7, minmax(var(--day-min-width), 1fr));
   border-bottom: 1px solid var(--border);
   min-height: 140px;
 }

@@ -694,6 +694,7 @@ button {
 }
 
 .task-desc {
+  font-family: var(--task-description-font);
   font-size: 0.9rem;
   margin: 0;
   color: var(--text-main);

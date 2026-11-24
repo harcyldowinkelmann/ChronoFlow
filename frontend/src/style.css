@@ -1,1 +1,4 @@
-/* Reset by App.vue */
+:root {
+  /* Fonte das descrições das tarefas: altere o primeiro nome para experimentar outras fontes instaladas. */
+  --task-description-font: 'Trebuchet MS', 'Segoe UI', sans-serif;
+}

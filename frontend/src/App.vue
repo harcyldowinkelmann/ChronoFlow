@@ -346,6 +346,8 @@ export default {
 [data-theme="ambitious"] {
   --primary: #1a472a;        
   --primary-hover: #2a623d;  
+  --time-bg: #d1dad4;
+  --time-text: #1a472a;
   --secondary: #dcdcdc;      
   --secondary-hover: #c0c0c0;
   --bg-gradient: linear-gradient(135deg, #0b1c11 0%, #1a472a 100%);
@@ -362,6 +364,8 @@ export default {
 [data-theme="sharp-mind"] {
   --primary: #0e1a40;
   --primary-hover: #222f5b;
+  --time-bg: #cfd1d9;
+  --time-text: #0e1a40;
   --secondary: #946b2d;
   --secondary-hover: #7a5825;
   --bg-gradient: linear-gradient(135deg, #050a1f 0%, #0e1a40 100%);
@@ -378,6 +382,8 @@ export default {
 [data-theme="courage"] {
   --primary: #740001;
   --primary-hover: #ae0001;
+  --time-bg: #e3cccc;
+  --time-text: #740001;
   --secondary: #d3a625;
   --secondary-hover: #eeba30;
   --bg-gradient: linear-gradient(135deg, #3a0000 0%, #740001 100%);
@@ -394,6 +400,8 @@ export default {
 [data-theme="hard-work"] {
   --primary: #eeb939;
   --primary-hover: #f0c75e;
+  --time-bg: #fcf1d7;
+  --time-text: #614600;
   --secondary: #111111;
   --secondary-hover: #222222;
   --bg-gradient: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
@@ -646,11 +654,11 @@ button {
 .task-time {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--time-text);
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--secondary);
+  background: var(--time-bg);
   padding: 2px 6px;
   border-radius: 3px;
 }
